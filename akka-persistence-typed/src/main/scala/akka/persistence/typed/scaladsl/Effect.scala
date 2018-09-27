@@ -8,8 +8,9 @@ import akka.japi.function
 import akka.annotation.DoNotInherit
 import akka.persistence.typed.{ SideEffect, Stop }
 import akka.persistence.typed.internal._
-
 import scala.collection.{ immutable ⇒ im }
+
+import akka.persistence.typed.ExpectingReply
 
 /**
  * Factories for effects - how a persistent actor reacts on a command
@@ -91,5 +92,8 @@ trait Effect[+Event, State] {
   def andThenStop(): Effect[Event, State] = {
     CompositeEffect(this, Stop.asInstanceOf[SideEffect[State]])
   }
+
+  def thenReply[ReplyMessage](cmd: ExpectingReply[ReplyMessage])(replyWithMessage: State ⇒ ReplyMessage): Effect[Event, State] =
+    andThen(SideEffect[State](newState ⇒ cmd.replyTo ! replyWithMessage(newState)))
 }
 

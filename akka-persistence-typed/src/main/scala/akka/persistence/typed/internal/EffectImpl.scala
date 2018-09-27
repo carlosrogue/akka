@@ -5,9 +5,10 @@
 package akka.persistence.typed.internal
 
 import akka.persistence.typed.{ SideEffect, javadsl, scaladsl }
-
 import scala.collection.{ immutable ⇒ im }
+
 import akka.annotation.InternalApi
+import akka.persistence.typed.ExpectingReply
 import akka.persistence.typed.scaladsl.Effect
 
 /** INTERNAL API */
