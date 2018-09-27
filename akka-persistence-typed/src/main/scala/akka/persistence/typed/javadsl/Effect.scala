@@ -8,8 +8,9 @@ import akka.annotation.DoNotInherit
 import akka.japi.function
 import akka.persistence.typed.internal._
 import akka.persistence.typed.{ SideEffect, Stop }
-
 import scala.collection.JavaConverters._
+
+import akka.persistence.typed.ExpectingReply
 
 object EffectFactory extends EffectFactories[Nothing, Nothing, Nothing]
 
@@ -65,5 +66,8 @@ object EffectFactory extends EffectFactories[Nothing, Nothing, Nothing]
 
   final def thenStop(): Effect[Event, State] =
     CompositeEffect(this, Stop.asInstanceOf[SideEffect[State]])
+
+  def thenReply[ReplyMessage](cmd: ExpectingReply[ReplyMessage], replyWithMessage: function.Function[State, ReplyMessage]): Effect[Event, State] =
+    CompositeEffect(this, SideEffect[State](newState ⇒ cmd.replyTo ! replyWithMessage(newState)))
 
 }
