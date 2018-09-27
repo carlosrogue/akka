@@ -6,6 +6,7 @@ package akka.io.dns.internal
 
 import java.net.InetSocketAddress
 
+import akka.AkkaException
 import akka.actor.{ Actor, ActorLogging, ActorRef, Stash }
 import akka.annotation.InternalApi
 import akka.io.Tcp._
@@ -36,7 +37,7 @@ import akka.util.ByteString
   val connecting: Receive = {
     case CommandFailed(_: Connect) ⇒
       log.warning("Failed to connect to [{}]", ns)
-    // TODO
+      throw new AkkaException("Connecting failed")
     case _: Tcp.Connected ⇒
       log.debug(s"Connected to TCP address [{}]", ns)
       val connection = sender()
@@ -54,8 +55,8 @@ import akka.util.ByteString
       connection ! Tcp.Write(encodeLength(bytes.length))
       connection ! Tcp.Write(bytes)
     case CommandFailed(_: Write) ⇒
-      // TODO
       log.warning("Write failed")
+      throw new AkkaException("Write failed")
     case Received(data) ⇒
       log.warning("Received data")
       require(data.length > 2, "Expected a response datagram starting with the size")
