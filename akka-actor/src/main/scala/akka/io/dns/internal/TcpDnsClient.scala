@@ -34,8 +34,7 @@ import akka.util.ByteString
 
   val connecting: Receive = {
     case CommandFailed(_: Connect) ⇒
-      log.warning("Failed to connect to [{}]", ns)
-      throw new AkkaException("Connecting failed")
+      throw new AkkaException(s"Failed to connect to TCP DNS server at [$ns]")
     case _: Tcp.Connected ⇒
       log.debug(s"Connected to TCP address [{}]", ns)
       val connection = sender()
@@ -52,7 +51,6 @@ import akka.util.ByteString
       connection ! Tcp.Write(encodeLength(bytes.length))
       connection ! Tcp.Write(bytes)
     case CommandFailed(_: Write) ⇒
-      log.warning("Write failed")
       throw new AkkaException("Write failed")
     case Received(newData) ⇒
       val data = buffer ++ newData
