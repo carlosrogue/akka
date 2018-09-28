@@ -36,7 +36,7 @@ import akka.util.ByteString
     case CommandFailed(_: Connect) ⇒
       throw new AkkaException(s"Failed to connect to TCP DNS server at [$ns]")
     case _: Tcp.Connected ⇒
-      log.debug(s"Connected to TCP address [{}]", ns)
+      log.debug("Connected to TCP address [{}]", ns)
       val connection = sender()
       context.become(ready(connection))
       connection ! Register(self)
@@ -77,7 +77,7 @@ import akka.util.ByteString
 
   private def parseResponse(data: ByteString) = {
     val msg = Message.parse(data)
-    log.debug(s"Decoded: $msg")
+    log.debug("Decoded TCP DNS response [{}]", msg)
     if (msg.flags.isTruncated) {
       log.warning("TCP DNS response truncated")
     }
