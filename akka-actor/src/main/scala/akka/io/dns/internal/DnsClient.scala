@@ -10,7 +10,7 @@ import akka.actor.Status.Failure
 import akka.actor.{ Actor, ActorLogging, ActorRef, NoSerializationVerificationNeeded, Props, Stash }
 import akka.annotation.InternalApi
 import akka.io.dns.{ RecordClass, RecordType, ResourceRecord }
-import akka.io.{ IO, Udp }
+import akka.io.{ IO, Tcp, Udp }
 import akka.pattern.BackoffSupervisor
 
 import scala.collection.{ immutable ⇒ im }
@@ -40,17 +40,16 @@ import scala.concurrent.duration._
 
   import context.system
 
-  IO(Udp) ! Udp.Bind(self, new InetSocketAddress(InetAddress.getByAddress(Array.ofDim(4)), 0))
+  val udp = IO(Udp)
+  val tcp = IO(Tcp)
 
   var inflightRequests: Map[Short, (ActorRef, Message)] = Map.empty
 
-  val tcpDnsClient = context.actorOf(BackoffSupervisor.props(
-    Props(classOf[TcpDnsClient], ns, self),
-    childName = "tcpDnsClient",
-    minBackoff = 10.millis,
-    maxBackoff = 20.seconds,
-    randomFactor = 0.1
-  ), "tcpDnsClientSupervisor")
+  lazy val tcpDnsClient: ActorRef = createTcpClient()
+
+  override def preStart() = {
+    udp ! Udp.Bind(self, new InetSocketAddress(InetAddress.getByAddress(Array.ofDim(4)), 0))
+  }
 
   def receive: Receive = {
     case Udp.Bound(local) ⇒
@@ -112,9 +111,10 @@ import scala.concurrent.duration._
       }
     case Udp.Received(data, remote) ⇒
       log.debug(s"Received message from [{}]: [{}]", remote, data)
+
       val msg = Message.parse(data)
       log.debug(s"Decoded: $msg")
-      // TODO remove me when #25460 is implemented
+
       if (msg.flags.isTruncated) {
         log.debug("DNS response truncated, falling back to TCP")
         inflightRequests.get(msg.id) match {
@@ -137,5 +137,15 @@ import scala.concurrent.duration._
       }
     case Udp.Unbind  ⇒ socket ! Udp.Unbind
     case Udp.Unbound ⇒ context.stop(self)
+  }
+
+  def createTcpClient() = {
+    context.actorOf(BackoffSupervisor.props(
+      Props(classOf[TcpDnsClient], tcp, ns, self),
+      childName = "tcpDnsClient",
+      minBackoff = 10.millis,
+      maxBackoff = 20.seconds,
+      randomFactor = 0.1
+    ), "tcpDnsClientSupervisor")
   }
 }

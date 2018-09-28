@@ -17,14 +17,12 @@ import akka.util.ByteString
 /**
  * INTERNAL API
  */
-@InternalApi private[akka] class TcpDnsClient(ns: InetSocketAddress, answerRecipient: ActorRef) extends Actor with ActorLogging with Stash {
+@InternalApi private[akka] class TcpDnsClient(tcp: ActorRef, ns: InetSocketAddress, answerRecipient: ActorRef) extends Actor with ActorLogging with Stash {
   import TcpDnsClient._
 
   import context.system
 
   override def receive: Receive = idle
-
-  val tcp = IO(Tcp)
 
   val idle: Receive = {
     case _: Message ⇒
