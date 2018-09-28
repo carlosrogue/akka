@@ -62,11 +62,10 @@ import akka.util.ByteString
         if (data.drop(prefixSize).length < expectedPayloadLength)
           context.become(ready(connection, data))
         else {
-          val payload = data.drop(prefixSize).take(expectedPayloadLength)
-          answerRecipient ! parseResponse(payload)
+          answerRecipient ! parseResponse(data.drop(prefixSize))
           context.become(ready(connection))
-          if (data.length > expectedPayloadLength + prefixSize) {
-            self ! Received(data.drop(expectedPayloadLength + prefixSize))
+          if (data.length > prefixSize + expectedPayloadLength) {
+            self ! Received(data.drop(prefixSize + expectedPayloadLength))
           }
         }
       }
