@@ -75,8 +75,33 @@ import akka.util.Timeout
 /**
  * INTERNAL API
  */
+@InternalApi private[akka] object EntityRefImpl {
+  /**
+   * Used for concatenating EntityTypeKey with entityId to construct unique persistenceId.
+   * This must be same as in Lagom, for compatibility.
+   */
+  val EntityIdSeparator = '|'
+}
+
+/**
+ * INTERNAL API
+ */
 @InternalApi private[akka] final case class EntityTypeKeyImpl[T](name: String, messageClassName: String)
   extends javadsl.EntityTypeKey[T] with scaladsl.EntityTypeKey[T] {
+  import EntityRefImpl.EntityIdSeparator
+
+  if (name.contains(EntityIdSeparator))
+    throw new IllegalArgumentException(s"EntityTypeKey.name [$name] contains [$EntityIdSeparator] which is " +
+      "a reserved character")
+
+  override def persistenceIdFrom(entityId: String): String = {
+    if (entityId.contains(EntityIdSeparator))
+      throw new IllegalArgumentException(s"entityId [$entityId] contains [$EntityIdSeparator] which is " +
+        "a reserved character")
+
+    name + EntityIdSeparator + entityId
+  }
+
   override def toString: String = s"EntityTypeKey[$messageClassName]($name)"
 }
 

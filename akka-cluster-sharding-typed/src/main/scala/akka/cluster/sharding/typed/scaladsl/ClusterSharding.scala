@@ -309,6 +309,12 @@ object StartEntity {
  */
 @DoNotInherit trait EntityTypeKey[T] {
   def name: String
+
+  /**
+   * Constructs a `persistenceId` from this `EntityTypeKey` and the given `entityId` by
+   * concatenating them with `|` separator.
+   */
+  def persistenceIdFrom(entityId: String): String
 }
 
 object EntityTypeKey {

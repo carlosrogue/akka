@@ -18,7 +18,7 @@ import scala.util.{ Failure, Success }
 
 /** Java API */
 @ApiMayChange
-abstract class PersistentBehavior[Command, Event, State >: Null] private (val persistenceId: String, supervisorStrategy: Option[BackoffSupervisorStrategy]) extends DeferredBehavior[Command] {
+abstract class PersistentBehavior[Command, Event, State >: Null] private[akka] (val persistenceId: String, supervisorStrategy: Option[BackoffSupervisorStrategy]) extends DeferredBehavior[Command] {
 
   def this(persistenceId: String) = {
     this(persistenceId, None)

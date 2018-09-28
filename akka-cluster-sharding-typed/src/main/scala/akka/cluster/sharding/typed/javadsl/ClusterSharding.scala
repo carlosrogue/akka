@@ -310,6 +310,12 @@ object StartEntity {
    * INTERNAL API
    */
   @InternalApi private[akka] def asScala: scaladsl.EntityTypeKey[T] = scaladslSelf
+
+  /**
+   * Constructs a `persistenceId` from this `EntityTypeKey` and the given `entityId` by
+   * concatenating them with `|` separator.
+   */
+  def persistenceIdFrom(entityId: String): String
 }
 
 object EntityTypeKey {
