@@ -6,9 +6,9 @@ package akka.io.dns.internal
 
 import java.net.InetSocketAddress
 
-import akka.actor.{ Props, Terminated }
+import akka.actor.Props
 import akka.io.Tcp
-import akka.io.Tcp.{ CommandFailed, Connected, PeerClosed, Register }
+import akka.io.Tcp.{ Connected, PeerClosed, Register }
 import akka.io.dns.{ RecordClass, RecordType }
 import akka.io.dns.internal.DnsClient.Answer
 import akka.testkit.{ AkkaSpec, ImplicitSender, TestProbe }
@@ -39,7 +39,6 @@ class TcpDnsClientSpec extends AkkaSpec with ImplicitSender {
       val registered = tcpExtensionProbe.lastSender
 
       expectMsgType[Tcp.Write]
-      expectMsgType[Tcp.Write]
       registered ! Tcp.Received(encodeLength(exampleResponseMessage.write().length) ++ exampleResponseMessage.write())
 
       answerProbe.expectMsg(Answer(42, Nil))
@@ -66,7 +65,6 @@ class TcpDnsClientSpec extends AkkaSpec with ImplicitSender {
       val registered = tcpExtensionProbe.lastSender
 
       expectMsgType[Tcp.Write]
-      expectMsgType[Tcp.Write]
       val fullResponse = encodeLength(exampleResponseMessage.write().length) ++ exampleResponseMessage.write()
       registered ! Tcp.Received(fullResponse.take(8))
       registered ! Tcp.Received(fullResponse.drop(8))
@@ -88,8 +86,6 @@ class TcpDnsClientSpec extends AkkaSpec with ImplicitSender {
       expectMsgType[Register]
       val registered = tcpExtensionProbe.lastSender
 
-      expectMsgType[Tcp.Write]
-      expectMsgType[Tcp.Write]
       expectMsgType[Tcp.Write]
       expectMsgType[Tcp.Write]
       val fullResponse =

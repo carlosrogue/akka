@@ -48,8 +48,7 @@ import akka.util.ByteString
   def ready(connection: ActorRef, buffer: ByteString = ByteString.empty): Receive = {
     case msg: Message ⇒
       val bytes = msg.write()
-      connection ! Tcp.Write(encodeLength(bytes.length))
-      connection ! Tcp.Write(bytes)
+      connection ! Tcp.Write(encodeLength(bytes.length) ++ bytes)
     case CommandFailed(_: Write) ⇒
       throw new AkkaException("Write failed")
     case Received(newData) ⇒
