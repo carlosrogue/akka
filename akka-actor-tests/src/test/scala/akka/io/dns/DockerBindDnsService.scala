@@ -20,8 +20,12 @@ trait DockerBindDnsService extends Eventually { self: AkkaSpec ⇒
 
   override def atStartup(): Unit = {
     self.atStartup()
+
+    val image = "sameersbn/bind:9.11.3-20180713"
+    client.pull(image)
+
     val containerConfig = ContainerConfig.builder()
-      .image("sameersbn/bind:9.11.3-20180713")
+      .image(image)
       .hostConfig(
         HostConfig.builder()
           .portBindings(Map(
